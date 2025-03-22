@@ -69,11 +69,9 @@ jobs:
           echo $scan_id
           response_code=$(curl -X GET http://54.174.73.151:8000/v1/getllmfix/?scan_id=$scan_id)
 
-          echo "${{ secrets.MY_TOKEN }}"
-
-
       - name: Run Python Script to update remdiated pom.xml 
         run: |
-          export MY_SECRET_TOKEN="${{ secrets.MY_TOKEN }}"
-          echo $MY_SECRET_TOKEN
+          export MY_TOKEN="${{ secrets.MY_TOKEN }}"
           python3 scripts/update_pom_xml.py pom.xml
+        env:
+          MY_SECRET_TOKEN: ${{ secrets.MY_TOKEN }}
