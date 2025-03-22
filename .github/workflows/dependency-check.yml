@@ -36,11 +36,6 @@ jobs:
       - name: Run Python Script to Filter Trivy Report
         run: |
           python3 scripts/filter_trivy_scan.py reports/trivy-report.json pom.xml >> reports/filtered-trivy-report.json
-          response_code=$(curl -X POST http://54.174.73.151:8000/v1/addScan/ \
-            -H "Content-Type: application/json" \
-            -d @reports/filtered-trivy-report.json
-            )
-          echo "API Response Code: $response_code"
 
       - name: Convert Trivy JSON to SARIF
         run: |
@@ -63,31 +58,14 @@ jobs:
           name: trivy-json-report-filtered
           path: reports/filtered-trivy-report.json
       
-      # - name: Send Scan Report to API
-      #   run: |
-      #     response_code=$(curl -X POST http://54.174.73.151:8000/v1/addScan \
-      #       -H "Content-Type: application/json" \
-      #       -d @reports/filtered-trivy-report.json
-      #       )
-      #     echo "API Response Code: $response_code"
-
-  semgrep-scan:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout Code
-        uses: actions/checkout@v4
-
-      - name: Install Semgrep
+      - name: Send Scan Report to API
         run: |
-          pip install semgrep
+          response_code=$(curl -X POST http://54.174.73.151:8000/v1/addScan \
+            -H "Content-Type: application/json" \
+            -d @reports/filtered-trivy-report.json
+            )
+          echo "API Response Code: $response_code"
 
-      - name: Run Semgrep Scan (JSON Output)
+      - name: Run Python Script to Filter Trivy Report
         run: |
-          mkdir -p reports
-          semgrep scan --config=auto --json > reports/semgrep-report.json
-
-      - name: Save Semgrep JSON Report as Artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: semgrep-report
-          path: reports/semgrep-report.json
+          python3 scripts/update_pom_xml.py pom.xml
