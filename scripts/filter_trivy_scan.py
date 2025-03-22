@@ -15,6 +15,22 @@ def get_github_repo_id(repo):
     else:
         raise Exception(f"Failed to fetch repo ID: {response.status_code} - {response.text}")
 
+def generate_dependency_xml(group_id,artifact_id,version):
+    xml_dependencies = ""
+
+    dependency_xml = f"""
+    <dependency>
+      <groupId>{group_id}</groupId>
+      <artifactId>{artifact_id}</artifactId>
+      <version>{version}</version>
+    </dependency>"""
+
+    # Add the formatted dependency to the final string
+    xml_dependencies += dependency_xml + "\n"
+
+    return xml_dependencies
+
+
 def filter_json(input_file_path, pom_file_path):
     try:
 
@@ -53,12 +69,28 @@ def filter_json(input_file_path, pom_file_path):
             for vuln in vulnerabilities:
                 title = vuln.get("Title", "")
 
+                pkg_id = vuln.get("PkgID", "").split(":")
+
+                group_id = pkg_id[0]
+                artifact_id = pkg_id[1]
+                version = pkg_id[2]
+
+                existing_pom_xml = "Existing Version\n"+ generate_dependency_xml(group_id, artifact_id, version)
+
+                fixed_pom_xml = "Fixed Version\n"+ generate_dependency_xml(group_id, artifact_id, "replace_with_a_fixed_verison_as_mentioned_above")
+
+                solution_pom_xml = existing_pom_xml +"\n\n" +fixed_pom_xml
+                solution_pom_xml_bytes = solution_pom_xml.encode('utf-8')
+                base64_solution_pom_xml = base64.b64encode(solution_pom_xml_bytes).decode('utf-8')
+
+
                 category = title.split(":")[-1].strip() if ":" in title else "Unknown"
 
                 filtered_vuln = {
                     "category": category,
                     "solutions": [
-                        f"This vulnerability in {vuln.get('PkgID')} package is fixed in {vuln.get('FixedVersion')} versions."
+                        f"This vulnerability in {vuln.get('PkgID')} package is fixed in {vuln.get('FixedVersion')} versions.",
+                        base64_solution_pom_xml
                     ],  
                     "severity": vuln.get("Severity"),
                     "cve_id": vuln.get("VulnerabilityID"),
