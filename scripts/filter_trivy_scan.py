@@ -36,7 +36,7 @@ def filter_json(input_file_path, pom_file_path):
 
         filtered_data = {
             "project_name": project_name.split("/")[1],
-            "project_id": repo_id,
+            "project_id": str(repo_id),
             "scan_id": scan_id[0:7],
             "git_link": repo_url,
             "scan_link": [scan_link],
