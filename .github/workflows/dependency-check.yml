@@ -1,0 +1,80 @@
+name: Vulnerability Scan
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  security-events: write
+  actions: read
+  contents: read
+
+jobs:
+  trivy-scan:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Install Trivy
+        run: |
+          sudo apt-get install -y curl jq
+          curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sudo sh -s -- -b /usr/local/bin
+
+      - name: Run Trivy Scan with Categories
+        run: |
+          mkdir -p reports
+          trivy fs --scanners vuln,misconfig,secret,license \
+            --security-checks vuln,misconfig,secret,license \
+            --vuln-type library \
+            --format json --output reports/trivy-report.json .
+      
+      - name: Run Python Script to Filter Trivy Report
+        run: |
+          python3 scripts/filter_trivy_scan.py reports/trivy-report.json maven-example/pom.xml >> reports/filtered-trivy-report.json
+
+      - name: Convert Trivy JSON to SARIF
+        run: |
+          trivy convert --format sarif reports/trivy-report.json > reports/trivy-report.sarif
+
+      - name: Upload SARIF to GitHub Security Code Scanning
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: reports/trivy-report.sarif
+          
+      - name: Save Trivy JSON Report as Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: trivy-json-report
+          path: reports/trivy-report.json
+          
+      - name: Save Filtered Trivy JSON Report as Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: trivy-json-report-filtered
+          path: reports/filtered-trivy-report.json
+
+  semgrep-scan:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Install Semgrep
+        run: |
+          pip install semgrep
+
+      - name: Run Semgrep Scan (JSON Output)
+        run: |
+          mkdir -p reports
+          semgrep scan --config=auto --json > reports/semgrep-report.json
+
+      - name: Save Semgrep JSON Report as Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: semgrep-report
+          path: reports/semgrep-report.json
