@@ -108,6 +108,9 @@ def main():
     # parser.add_argument("input_file", help="Path to the input JSON file")
     parser.add_argument("pom_file", help="Path to the pom.xml file")
 
+    args = parser.parse_args()
+    pom_file=args.pom_file
+
     # Fetch environment variables from GitHub Actions
     project_id = os.getenv('PROJECT_ID')  # This should be the project_id passed in as input or environment
     commit_id = os.getenv('GITHUB_SHA')  # The new branch name
@@ -115,20 +118,20 @@ def main():
     repo = os.getenv('GITHUB_REPOSITORY')  # GitHub repository (owner/repo)
 
     try:
-        # print( "step 1")
-        # # Step 1: Fetch the latest scan data
-        # scan_data = get_latest_scan(project_id)
-        # scan_data = json.dumps(scan_data, indent=2)
-        # scan_data = json.loads(scan_data)
+        print( "step 1")
+        # Step 1: Fetch the latest scan data
+        scan_data = get_latest_scan(project_id)
+        scan_data = json.dumps(scan_data, indent=2)
+        scan_data = json.loads(scan_data)
 
-        # print(type(scan_data))
+        print(type(scan_data))
 
-        # print(scan_data)
+        print(scan_data)
 
-        # print( "step 2")
-        # # Step 2: Decode the base64 encoded pom.xml content
-        # pom_base64_content = scan_data['solution']['file']
-        # pom_content = decode_base64_pom(pom_base64_content)
+        print( "step 2")
+        # Step 2: Decode the base64 encoded pom.xml content
+        pom_base64_content = scan_data['solution']['file']
+        pom_content = decode_base64_pom(pom_base64_content)
 
         print( "step 3")
         # Step 3: Get the default branch of the repo
