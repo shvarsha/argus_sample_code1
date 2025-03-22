@@ -41,7 +41,7 @@ def filter_json(input_file_path, pom_file_path):
             "git_link": repo_url,
             "scan_link": [scan_link],
             "cves": [],
-            "pom.xml": pom_base64, 
+            "pom_xml": pom_base64, 
             "tags": [scan_id[0:7]]
             
         }
