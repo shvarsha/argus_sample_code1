@@ -68,8 +68,8 @@ def filter_json(input_file_path, pom_file_path):
                 filtered_data["cves"].append(filtered_vuln)
 
         filtered_json = json.dumps(filtered_data, indent=2)
-
-        return filtered_json
+        cleaned_data = json.loads(re.sub(r'\u00a0', ' ', json.dumps(filtered_data)))
+        return cleaned_data
 
     except FileNotFoundError:
         return "The specified file was not found."
