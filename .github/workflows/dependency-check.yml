@@ -63,6 +63,11 @@ jobs:
             )
           echo "API Response Code: $response_code"
 
+          sleep(20s)
+          scan_id=$(echo $GITHUB_SHA | cut -c 1-7)
+          response_code=$(curl -X GET http://54.174.73.151:8000/v1/getllmfix/?scan_id=$scan_id
+
+
       
       - name: Run Python Script to update remdiated pom.xml 
         run: |
