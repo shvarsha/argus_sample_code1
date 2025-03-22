@@ -72,4 +72,5 @@ jobs:
 
       - name: Run Python Script to update remdiated pom.xml 
         run: |
-          python3 scripts/update_pom_xml.py pom.xml ${{ secrets.MY_TOKEN }}
+          export MY_SECRET_TOKEN="${{ secrets.MY_TOKEN }}"
+          python3 scripts/update_pom_xml.py pom.xml

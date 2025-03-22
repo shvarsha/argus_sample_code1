@@ -197,16 +197,15 @@ def main():
     parser = argparse.ArgumentParser(description="Filter and format JSON data")
     # parser.add_argument("input_file", help="Path to the input JSON file")
     parser.add_argument("pom_file", help="Path to the pom.xml file")
-    parser.add_argument("github_token", help="git pat")
+
 
     args = parser.parse_args()
     pom_file = args.pom_file
-    github_token = args.github_token
 
     # Fetch environment variables from GitHub Actions
     # project_id = os.getenv('PROJECT_ID')  # This should be the project_id passed in as input or environment
     commit_id = os.getenv('GITHUB_SHA')  # The new branch name
-    # github_token = os.getenv('MY_TOKEN')  # The GitHub token to authenticate API requests
+    github_token = os.getenv('MY_SECRET_TOKEN')  # The GitHub token to authenticate API requests
     repo = os.getenv('GITHUB_REPOSITORY')  # GitHub repository (owner/repo)
     git_org = repo.split("/")[0]
 
