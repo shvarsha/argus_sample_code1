@@ -101,6 +101,84 @@ def commit_file_changes(repo, commit_id, pom_file, pom_content, token):
         raise Exception(f"Failed to commit changes: {commit_response.status_code} - {commit_response.text}")
         traceback.print_exc()
 
+# Function to create a pull request using normal GitHub API
+def create_pull_request(repo, token, commit_id, git_org):
+    # Adjust the URL to use the normal GitHub API
+    url = f"https://api.github.com/repos/{repo}/pulls"
+    
+    headers = {
+        "Authorization": f"Bearer {token}",
+        "Content-Type": "application/json"
+    }
+
+    # Prepare the pull request data
+    pr_data = {
+        "title": f"detected vulnerabilities fixed in pom.xml",
+        "body": f"detected vulnerabilities fixed in pom.xml",
+        "head": f"{git_org}:{commit_id}",
+        "base": "main"
+    }
+
+    # Send the POST request to create the pull request
+    response = requests.post(url, headers=headers, json=pr_data)
+    
+
+    if response.status_code == 201:
+        pr_response_json = response.json()
+        print(pr_response_json)
+        pr_url = pr_data.get("html_url")  # Extract the PR URL
+        print(f"Pull request created successfully for {commit_id}.")
+        return pr_url  # Return the PR URL for use in further steps
+
+    else:
+        raise Exception(f"Failed to create pull request: {response.status_code} - {response.text}")
+
+# Function to create a GitHub issue and mention the PR link
+def create_github_issue(repo, token, commit_id, pr_url, git_org):
+    url = f"https://api.github.com/repos/{repo}/issues"
+    
+    headers = {
+        "Authorization": f"Bearer {token}",
+        "Content-Type": "application/json"
+    }
+
+    # Prepare the issue data with meaningful details
+    issue_data = {
+        "title": f"Vulnerabilities fixed in pom.xml for commit {commit_id}",
+        "body": (
+            f"### Vulnerability Fix Notification\n\n"
+            f"#### Pull Request Details:\n"
+            f"- **Commit ID:** `{commit_id}`\n"
+            f"- **Repository:** `{repo}`\n\n"
+            f"#### Summary:\n"
+            f"The vulnerabilities detected in the `pom.xml` file have been resolved in the commit `{commit_id}`. "
+            f"As part of the security compliance, these vulnerabilities have been addressed to ensure the project "
+            f"remains secure and up-to-date.\n\n"
+            f"#### Changes Made:\n"
+            f"- Fixed vulnerabilities in the `pom.xml` file.\n"
+            f"- Updated dependencies to more secure versions.\n"
+            f"- Enhanced project configuration for better security.\n\n"
+            f"#### Pull Request:\n"
+            f"- [View the Pull Request Here]({pr_url})\n\n"
+            f"#### Next Steps:\n"
+            f"Please review the pull request and merge it once verified. "
+            f"Monitor the deployment for any issues after the merge.\n\n"
+            f"**Note:** This issue has been created to track the resolution of vulnerabilities and to ensure the project "
+            f"stays secure."
+        ),
+        "labels": ["vulnerabilities", "security", "pom.xml"]
+    }
+
+    # Send the POST request to create the issue
+    response = requests.post(url, headers=headers, json=issue_data)
+
+    if response.status_code == 201:
+        print(f"GitHub issue created successfully for commit {commit_id}.")
+    else:
+        raise Exception(f"Failed to create issue: {response.status_code} - {response.text}")
+        traceback.print_exc()
+
+
 # Main function to handle the workflow
 def main():
     
@@ -113,9 +191,10 @@ def main():
 
     # Fetch environment variables from GitHub Actions
     project_id = os.getenv('PROJECT_ID')  # This should be the project_id passed in as input or environment
-    commit_id = os.getenv('GITHUB_SHA')  # The new branch name
+    commit_id = os.getenv('MY_TOKEN')  # The new branch name
     github_token = os.getenv('GITHUB_TOKEN')  # The GitHub token to authenticate API requests
     repo = os.getenv('GITHUB_REPOSITORY')  # GitHub repository (owner/repo)
+    git_org = repo.split("/")[0]
 
     try:
         print( "step 1")
@@ -131,7 +210,11 @@ def main():
         print( "step 2")
         # Step 2: Decode the base64 encoded pom.xml content
         pom_base64_content = scan_data['solution']['file']
+
+        print(pom_base64_content)
         pom_content = decode_base64_pom(pom_base64_content)
+
+        print(pom_content)
 
         print( "step 3")
         # Step 3: Get the default branch of the repo
@@ -142,9 +225,20 @@ def main():
         # Step 4: Create a new branch based on the commit ID
         create_new_branch(repo, commit_id, github_token, default_branch)
 
+
         print( "step 5")
         # Step 5: Commit the new pom.xml file to the specified path in the new branch
         commit_file_changes(repo, commit_id, pom_file, pom_content, github_token)
+        
+        print( "step 6")
+        # Step 6: Create a pull request
+        pr_url = create_pull_request(repo, github_token, commit_id, git_org)
+
+        print (pr_url)
+        
+        print( "step 7")
+        # Step 7: Create a GitHub issue with a reference to the PR
+        create_github_issue(repo, github_token, commit_id, pr_url, git_org)
 
     except Exception as e:
         print(f"Error: {e}")
