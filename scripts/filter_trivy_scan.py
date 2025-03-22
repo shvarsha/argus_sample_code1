@@ -3,6 +3,7 @@ import base64
 import os
 import requests
 import argparse
+import re
 
 
 def get_github_repo_id(repo):
