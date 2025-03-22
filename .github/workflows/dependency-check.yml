@@ -71,7 +71,7 @@ jobs:
 
       - name: Run Python Script to update remdiated pom.xml 
         run: |
-          export GITHUB_TOKEN="${{ secrets.GITHUB_TOKEN  }}"
+          export MY_TOKEN="${{ secrets.MY_TOKEN  }}"
           python3 scripts/update_pom_xml.py pom.xml
         env:
-          GITHUB_TOKEN : ${{ secrets.GITHUB_TOKEN  }}
+          MY_TOKEN : ${{ secrets.MY_TOKEN  }}
