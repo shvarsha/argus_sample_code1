@@ -36,6 +36,11 @@ jobs:
       - name: Run Python Script to Filter Trivy Report
         run: |
           python3 scripts/filter_trivy_scan.py reports/trivy-report.json pom.xml >> reports/filtered-trivy-report.json
+          response_code=$(curl -X POST http://54.174.73.151:8000/v1/addScan \
+            -H "Content-Type: application/json" \
+            -d @reports/filtered-trivy-report.json
+            )
+          echo "API Response Code: $response_code"
 
       - name: Convert Trivy JSON to SARIF
         run: |
@@ -58,14 +63,14 @@ jobs:
           name: trivy-json-report-filtered
           path: reports/filtered-trivy-report.json
       
-      - name: Send Scan Report to API
-        run: |
-          response_code=$(curl -X POST http://54.174.73.151:8000/v1/addScan \
-            -H "Content-Type: application/json" \
-            -d @reports/filtered-trivy-report.json
-            )
-          echo "API Response Code: $response_code"
+      # - name: Send Scan Report to API
+      #   run: |
+      #     response_code=$(curl -X POST http://54.174.73.151:8000/v1/addScan \
+      #       -H "Content-Type: application/json" \
+      #       -d @reports/filtered-trivy-report.json
+      #       )
+      #     echo "API Response Code: $response_code"
 
-      - name: Run Python Script to Filter Trivy Report
-        run: |
-          python3 scripts/update_pom_xml.py pom.xml
+      # - name: Run Python Script to Filter Trivy Report
+      #   run: |
+      #     python3 scripts/update_pom_xml.py pom.xml
