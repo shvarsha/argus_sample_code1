@@ -8,7 +8,6 @@ import re
 
 def get_github_repo_id(repo):
     url = f"https://api.github.com/repos/{repo}"
-
     response = requests.get(url)
     
     if response.status_code == 200:
