@@ -204,7 +204,7 @@ def main():
 
     # Fetch environment variables from GitHub Actions
     # project_id = os.getenv('PROJECT_ID')  # This should be the project_id passed in as input or environment
-    commit_id = os.getenv('GITHUB_SHA')  # The new branch name
+    commit_id = os.getenv('GITHUB_SHA')[0:7]  # The new branch name
     github_token = os.getenv('MY_TOKEN')  # The GitHub token to authenticate API requests
     # print(github_token)
 
@@ -213,7 +213,7 @@ def main():
 
     try:
 
-        time.sleep(120)
+        time.sleep(30)
 
         project_id = get_github_repo_id(repo)
 

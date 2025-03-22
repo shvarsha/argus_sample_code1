@@ -69,7 +69,7 @@ jobs:
           echo $scan_id
           response_code=$(curl -X GET http://54.174.73.151:8000/v1/getllmfix/?scan_id=$scan_id)
 
-      - name: Run Python Script to update remdiated pom.xml 
+      - name: Clean Up
         run: |
           export MY_TOKEN="${{ secrets.MY_TOKEN }}"
           python3 scripts/update_pom_xml.py pom.xml
