@@ -7,6 +7,15 @@ import traceback
 import time
 
 
+def get_github_repo_id(repo):
+    url = f"https://api.github.com/repos/{repo}"
+    response = requests.get(url)
+    
+    if response.status_code == 200:
+        return response.json().get("id")
+    else:
+        raise Exception(f"Failed to fetch repo ID: {response.status_code} - {response.text}")
+
 # Function to fetch the latest scan details from the provided API
 def get_latest_scan(project_id):
 
@@ -195,7 +204,7 @@ def main():
     github_token = args.github_token
 
     # Fetch environment variables from GitHub Actions
-    project_id = os.getenv('PROJECT_ID')  # This should be the project_id passed in as input or environment
+    # project_id = os.getenv('PROJECT_ID')  # This should be the project_id passed in as input or environment
     commit_id = os.getenv('GITHUB_SHA')  # The new branch name
     # github_token = os.getenv('MY_TOKEN')  # The GitHub token to authenticate API requests
     repo = os.getenv('GITHUB_REPOSITORY')  # GitHub repository (owner/repo)
@@ -204,6 +213,8 @@ def main():
     try:
 
         time.sleep(120)
+
+        project_id = get_github_repo_id(repo)
 
         print( "step 1")
         # Step 1: Fetch the latest scan data
