@@ -1,7 +1,19 @@
 import json
-import os
-import argparse
 import base64
+import os
+import requests
+import argparse
+
+
+def get_github_repo_id(repo):
+    url = f"https://api.github.com/repos/{repo}"
+
+    response = requests.get(url)
+    
+    if response.status_code == 200:
+        return response.json().get("id")
+    else:
+        raise Exception(f"Failed to fetch repo ID: {response.status_code} - {response.text}")
 
 def filter_json(input_file_path, pom_file_path):
     try:
@@ -11,17 +23,27 @@ def filter_json(input_file_path, pom_file_path):
             
         scan_id = os.getenv("GITHUB_SHA", "unknown")
         project_name = os.getenv("GITHUB_REPOSITORY", "unknown")
-        repo_url = f"{os.getenv('GITHUB_SERVER_URL', 'https://github.com')}/{project_name}.git"
+        repo_url = f"{os.getenv('GITHUB_SERVER_URL', 'https://github.com')}/{project_name}"
+        job_run_id = os.getenv("GITHUB_RUN_ID", "unknown")
+
+        scan_link = repo_url+"/actions/runs/"+job_run_id
+
+        repo_id = get_github_repo_id(project_name)
+
 
         with open(pom_file_path, 'rb') as pom_file:
             pom_base64 = base64.b64encode(pom_file.read()).decode('utf-8')
 
         filtered_data = {
-            "scanId": scan_id[0:7],
-            "projectName": project_name,
-            "repo_url": repo_url,
+            "project_name": project_name.split("/")[1],
+            "project_id": repo_id,
+            "scan_id": scan_id[0:7],
+            "git_link": repo_url,
+            "scan_link": [scan_link],
+            "cves": [],
             "pom.xml": pom_base64, 
-            "vulnerabilities": []
+            "tags": [scan_id[0:7]]
+            
         }
 
         for result in data.get("Results", []):
@@ -34,18 +56,16 @@ def filter_json(input_file_path, pom_file_path):
                 category = title.split(":")[-1].strip() if ":" in title else "Unknown"
 
                 filtered_vuln = {
-                    "VulnerabilityID": vuln.get("VulnerabilityID"),
-                    "PkgID": vuln.get("PkgID"),
-                    "PkgName": vuln.get("PkgName"),
-                    "Remediation": [
-                        f"This vulnerability in {vuln.get('PkgID')} is fixed in {vuln.get('FixedVersion')}"
-                    ],   
-                    "Category": category,
-                    "Title": title,
-                    "Description": vuln.get("Description"),
-                    "Severity": vuln.get("Severity"),
+                    "category": category,
+                    "solutions": [
+                        f"This vulnerability in {vuln.get('PkgID')} is fixed in {vuln.get('FixedVersion')} versions"
+                    ],  
+                    "severity": vuln.get("Severity"),
+                    "cve_id": vuln.get("VulnerabilityID"),
+                    "description": vuln.get("Description"),
+                    "vulnerability": title
                 }
-                filtered_data["vulnerabilities"].append(filtered_vuln)
+                filtered_data["cves"].append(filtered_vuln)
 
         filtered_json = json.dumps(filtered_data, indent=2)
 
@@ -60,7 +80,6 @@ def main():
     parser = argparse.ArgumentParser(description="Filter and format JSON data")
     parser.add_argument("input_file", help="Path to the input JSON file")
     parser.add_argument("pom_file", help="Path to the pom.xml file")
-
 
     args = parser.parse_args()
 

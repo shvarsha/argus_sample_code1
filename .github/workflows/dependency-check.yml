@@ -57,6 +57,12 @@ jobs:
         with:
           name: trivy-json-report-filtered
           path: reports/filtered-trivy-report.json
+      
+      - name: Send Scan Report to API
+        run: |
+          curl -X POST http://54.174.73.151:8000/v1/addscan \
+            -H "Content-Type: application/json" \
+            -d @reports/filtered-trivy-report.json
 
   semgrep-scan:
     runs-on: ubuntu-latest
