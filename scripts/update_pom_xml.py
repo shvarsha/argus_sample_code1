@@ -4,6 +4,7 @@ import base64
 import json
 import argparse
 import traceback
+import time
 
 
 # Function to fetch the latest scan details from the provided API
@@ -191,12 +192,15 @@ def main():
 
     # Fetch environment variables from GitHub Actions
     project_id = os.getenv('PROJECT_ID')  # This should be the project_id passed in as input or environment
-    commit_id = os.getenv('MY_TOKEN')  # The new branch name
-    github_token = os.getenv('GITHUB_TOKEN')  # The GitHub token to authenticate API requests
+    commit_id = os.getenv('GITHUB_SHA')  # The new branch name
+    github_token = os.getenv('MY_TOKEN')  # The GitHub token to authenticate API requests
     repo = os.getenv('GITHUB_REPOSITORY')  # GitHub repository (owner/repo)
     git_org = repo.split("/")[0]
 
     try:
+
+        time.sleep(120)
+
         print( "step 1")
         # Step 1: Fetch the latest scan data
         scan_data = get_latest_scan(project_id)
