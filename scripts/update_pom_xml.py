@@ -188,51 +188,44 @@ def main():
     parser = argparse.ArgumentParser(description="Filter and format JSON data")
     # parser.add_argument("input_file", help="Path to the input JSON file")
     parser.add_argument("pom_file", help="Path to the pom.xml file")
+    parser.add_argument("github_token", help="git pat")
 
     args = parser.parse_args()
-    pom_file=args.pom_file
+    pom_file = args.pom_file
+    github_token = args.github_token
 
     # Fetch environment variables from GitHub Actions
     project_id = os.getenv('PROJECT_ID')  # This should be the project_id passed in as input or environment
     commit_id = os.getenv('GITHUB_SHA')  # The new branch name
-    github_token = os.getenv('GITHUB_TOKEN')  # The GitHub token to authenticate API requests
+    # github_token = os.getenv('MY_TOKEN')  # The GitHub token to authenticate API requests
     repo = os.getenv('GITHUB_REPOSITORY')  # GitHub repository (owner/repo)
     git_org = repo.split("/")[0]
 
     try:
 
-        # time.sleep(120)
+        time.sleep(120)
 
-        # print( "step 1")
-        # # Step 1: Fetch the latest scan data
-        # scan_data = get_latest_scan(project_id)
-        # scan_data = json.dumps(scan_data, indent=2)
-        # scan_data = json.loads(scan_data)
+        print( "step 1")
+        # Step 1: Fetch the latest scan data
+        scan_data = get_latest_scan(project_id)
+        scan_data = json.dumps(scan_data, indent=2)
+        scan_data = json.loads(scan_data)
 
-        # print(type(scan_data))
+        print( "step 2")
+        # Step 2: Decode the base64 encoded pom.xml content
+        pom_base64_content = scan_data['solution']['file']
 
-        # print(scan_data)
-
-        # print( "step 2")
-        # # Step 2: Decode the base64 encoded pom.xml content
-        # pom_base64_content = scan_data['solution']['file']
-
-        # print(pom_base64_content)
-        # pom_content = decode_base64_pom(pom_base64_content)
-
-        # print(pom_content)
+        print(pom_base64_content)
+        pom_content = decode_base64_pom(pom_base64_content)
 
         print( "step 3")
         # Step 3: Get the default branch of the repo
         default_branch = get_default_branch(repo, github_token)
-        print(default_branch)
 
         print( "step 4")
         # Step 4: Create a new branch based on the commit ID
         create_new_branch(repo, commit_id, github_token, default_branch)
 
-
-        pom_content="test pom_content "
         print( "step 5")
         # Step 5: Commit the new pom.xml file to the specified path in the new branch
         commit_file_changes(repo, commit_id, pom_file, pom_content, github_token)
@@ -241,8 +234,6 @@ def main():
         # Step 6: Create a pull request
         pr_url = create_pull_request(repo, github_token, commit_id, git_org)
 
-        print (pr_url)
-        
         print( "step 7")
         # Step 7: Create a GitHub issue with a reference to the PR
         create_github_issue(repo, github_token, commit_id, pr_url, git_org)
