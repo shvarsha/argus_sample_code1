@@ -20,7 +20,7 @@ def get_github_repo_id(repo):
 def get_latest_scan(project_id):
 
     print(project_id)
-    url = f'http://54.174.73.151:8000/v1/latestScan?project_id={project_id}'
+    url = f'http://35.168.57.149:8000/v1/latestScan?project_id={project_id}'
     headers = {'accept': 'application/json'}
     response = requests.get(url, headers=headers)
 
