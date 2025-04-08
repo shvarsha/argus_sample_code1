@@ -57,7 +57,7 @@ jobs:
       
       - name: Send Scan Report to API
         run: |
-          response_code=$(curl -X POST http://54.174.73.151:8000/v1/addScan/ \
+          response_code=$(curl -X POST http://35.168.57.149:/v1/addScan/ \
             -H "Content-Type: application/json" \
             -d @reports/filtered-trivy-report.json
             )
@@ -67,7 +67,7 @@ jobs:
           scan_id=$(echo $GITHUB_SHA | cut -c 1-7)
 
           echo $scan_id
-          response_code=$(curl -X GET http://54.174.73.151:8000/v1/getllmfix/?scan_id=$scan_id)
+          response_code=$(curl -X GET http://35.168.57.149:8000/v1/getllmfix/?scan_id=$scan_id)
 
       - name: Clean Up
         run: |
