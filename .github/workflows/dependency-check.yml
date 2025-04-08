@@ -57,7 +57,7 @@ jobs:
       
       - name: Send Scan Report to API
         run: |
-          response_code=$(curl -X POST http://35.168.57.149:/v1/addScan/ \
+          response_code=$(curl -X POST http://35.168.57.149:8000/v1/addScan/ \
             -H "Content-Type: application/json" \
             -d @reports/filtered-trivy-report.json
             )
