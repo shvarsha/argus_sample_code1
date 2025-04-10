@@ -17,6 +17,24 @@
 		<java.version>1.8</java.version>
 	</properties>
 	<dependencies>
+		<!-- Exclude default logging starter -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-logging</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        <!-- Explicitly define logging dependencies -->
+        <dependency>
+            <groupId>ch.qos.logback</groupId>
+            <artifactId>logback-classic</artifactId>
+            <version>1.2.13</version> <!-- Updated Logback Version -->
+        </dependency>
+        <dependency>
+            <groupId>ch.qos.logback</groupId>
+            <artifactId>logback-core</artifactId>
+            <version>1.2.13</version> <!-- Updated Logback Version -->
+        </dependency>
+        <!-- Other dependencies remain unchanged -->
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-jdbc</artifactId>
